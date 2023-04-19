@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:8.0
+    volumes:
+      - db-data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: redmine_production
+      MYSQL_USER: redmine
+      MYSQL_PASSWORD: redmine-secret-pw
+
+  redmine:
+    image: redmine-workload:5.0.5
+    build: ./redmine-workload
+    ports:
+      - 8080:3000
+    depends_on:
+      - db
+    environment:
+      - REDMINE_DB_MYSQL=db
+      - REDMINE_DB_DATABASE=redmine_production
+      - REDMINE_DB_USERNAME=redmine
+      - REDMINE_DB_PASSWORD=redmine-secret-pw
+      - REDMINE_PLUGINS_MIGRATE="true"
+    volumes:
+      - redmine-data:/usr/src/redmine/files
+      - redmine-plugins:/usr/src/redmine/plugins
+    restart: always
+
+
+volumes:
+  db-data:
+  redmine-data:
+  redmine-plugins:
